@@ -82,10 +82,10 @@ Eu buscava ajuda e pouca gente passava a informação completa. Então aqui est�
 |---|---|---|
 | Boot do instalador (recovery) | ✅ | |
 | Instalação completa | ✅ | macOS 15.8 (24H23) |
-| 10 boots seguidos sem kernel panic | ⬜ | Nenhum pânico desde que o NVMeFix saiu. O log mostra `Only 168/256 slide values are usable` (valor bom). Ainda não chegou a 10 boots. |
+| 10 boots seguidos sem kernel panic | ⬜ | Nenhum pânico desde que o NVMeFix saiu (log: `Only 168/256 slide values are usable`, valor bom). Em 5 boots pelo SSD, **1 reiniciou sozinho** logo no começo do kernel, sem tela de pânico; o boot seguinte foi normal. Em observação |
 | Aceleração gráfica (Metal) na RX 6600 | ✅ | `Metal 3`, 8 GB de VRAM |
 | Vídeo pela HDMI e pela DisplayPort | ✅ | Dois monitores ao mesmo tempo (um na DP, outro na HDMI) |
-| Áudio onboard (layout-id final: `11`) | ⬜ | O AppleHDA carrega com `alc-layout-id = 11` e aparecem Line In, alto-falante e saída digital. Falta testar o som (atrás e na frente) |
+| Áudio onboard (layout-id final: `11`) | ✅ | Layout 11 do AppleALC (`alc-layout-id = 11`) |
 | Áudio pela HDMI/DP | ⬜ | Os dois monitores aparecem como saída de áudio; falta testar o som |
 | Ethernet | ⚠️ | Link só com o meio **fixo em 100baseTX full-duplex**. Suspeita: cabo com par ruim (no Windows também só chega a 100 Mbps). Em teste com cabo novo |
 | USB 2.0 / USB 3.0 / USB-C | ⬜ | |
@@ -400,7 +400,7 @@ Outras dicas:
 ## 11. Pós-instalação
 
 1. Copie a `EFI` do pendrive para a partição EFI do disco do macOS.
-2. **Atualizações OTA (macOS 14.4+):** o `revpatch=sbvmm` já está no boot-args desta EFI (precisa do RestrictEvents, que já está incluído). Mantenha `SecureBootModel = Disabled`. Para conferir: `sysctl kern.hv_vmm_present` tem que responder `1`.
+2. **Atualizações OTA (macOS 14.4+):** o `revpatch=sbvmm` já está no boot-args desta EFI (precisa do RestrictEvents, que já está incluído). Mantenha `SecureBootModel = Disabled`. Não dá para conferir com o `sysctl kern.hv_vmm_present` no Terminal: o RestrictEvents só responde `1` para o `softwareupdated` e o `osinstallersetupd`, então no Terminal o normal é `0`. O teste é o Atualização de Software procurar e oferecer atualizações sem erro.
 3. Confira no Hackintool (System › Peripherals) se a `en0` aparece com **Built-in**.
 4. Faça o primeiro login no iCloud pela Ethernet.
 5. Teste se a NVRAM funciona (seção "Verifying NVRAM" do [guia de iServices](https://dortania.github.io/OpenCore-Post-Install/universal/iservices.html)).
