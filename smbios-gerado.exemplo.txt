@@ -1,0 +1,7 @@
+# Copie para smbios-gerado.txt e preencha com os SEUS valores (GenSMBIOS + MAC da sua en0).
+# NUNCA publique o seu smbios-gerado.txt.
+Type=MacPro7,1
+Serial=W00000000001
+MLB=M0000000000000001
+SystemUUID=00000000-0000-0000-0000-000000000000
+ROM=112233445566
