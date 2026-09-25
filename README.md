@@ -127,6 +127,7 @@ Eu buscava ajuda e pouca gente passava a informação completa. Então aqui est�
 | AppleMCEReporterDisabler | 1.2 | [link oficial citado pelo Dortania](https://github.com/acidanthera/bugtracker/files/3703498/AppleMCEReporterDisabler.kext.zip) |
 | USBToolBox (kext) | 1.2.0 | + `UTBMap.kext` feito **para esta placa com este CPU** |
 | HfsPlus.efi | OcBinaryData | |
+| OpenCanopy.efi + `Resources` | OpenCore 1.0.7 + OcBinaryData | Picker gráfico, tema **GoldenGate** (sem a pasta `Audio`: não usamos o som no boot) |
 | Patches AMD | AMD_Vanilla (commit `eaf52ef`) | core count ajustado para **6** |
 
 ### ACPI
@@ -146,7 +147,7 @@ Eu buscava ajuda e pouca gente passava a informação completa. Então aqui est�
 
 ### Drivers UEFI
 
-`OpenRuntime.efi`, `HfsPlus.efi` e `ResetNvramEntry.efi`.
+`OpenRuntime.efi`, `HfsPlus.efi`, `ResetNvramEntry.efi` e `OpenCanopy.efi` (picker gráfico).
 
 ### Configurações que diferem do `Sample.plist` 1.0.7
 
@@ -167,7 +168,8 @@ Eu buscava ajuda e pouca gente passava a informação completa. Então aqui est�
 | Kernel › Quirks | XhciPortLimit | False | Não funciona no macOS 11.3+; o USB é resolvido pelo mapa |
 | Misc › Boot | HideAuxiliary | **True** | Esconde a recovery e as ferramentas do menu. **Na instalação, aperte Espaço no menu do OpenCore** para mostrar a recovery do pendrive (ou mude para False) |
 | Misc › Debug | AppleDebug / ApplePanic / DisableWatchDog | **True** | Diagnóstico |
-| Misc › Debug | Target | **67** | Log em arquivo na raiz do pendrive (`opencore-*.txt`) |
+| Misc › Debug | Target | **65** | Log **só em arquivo** (`opencore-*.txt` na raiz da partição EFI), sem texto na tela antes do picker. Com `67`, o log também aparece na tela |
+| Misc › Boot | PickerMode / PickerVariant | **External** / **`Acidanthera\GoldenGate`** | Picker gráfico (OpenCanopy). Os outros temas também estão na EFI: `Acidanthera\Syrah` e `Acidanthera\Chardonnay`. Se faltar um arquivo do tema, o OpenCore volta sozinho para o menu de texto |
 | Misc › Security | AllowSetDefault | **True** | |
 | Misc › Security | ScanPolicy | **0** | |
 | Misc › Security | SecureBootModel | **Disabled** | O guia manda `Disabled` do macOS 14.4 ao 26 (necessário para OTA) |
@@ -406,9 +408,8 @@ Outras dicas:
 4. Faça o primeiro login no iCloud pela Ethernet.
 5. Teste se a NVRAM funciona (seção "Verifying NVRAM" do [guia de iServices](https://dortania.github.io/OpenCore-Post-Install/universal/iservices.html)).
 6. Com o sistema estável, você pode:
-   - trocar o OpenCore para a build RELEASE;
-   - desligar os logs (`Target = 3`, `AppleDebug` e `ApplePanic = False`);
-   - ativar o **picker gráfico**: `OpenCanopy.efi` em `Drivers`, a pasta `Resources` do OcBinaryData em `EFI/OC/Resources`, e `PickerMode = External`;
+   - trocar o OpenCore para a build RELEASE (todos os `.efi`, inclusive o `OpenCanopy.efi`);
+   - desligar os logs (`Target = 3`, `AppleDebug` e `ApplePanic = False`) e apagar os `opencore-*.txt` da partição EFI;
    - o verbose (`-v`) pode ficar, se você gosta de ver o boot.
 
 ### 11.1 Apps que travam em AMD (Intel MKL)
