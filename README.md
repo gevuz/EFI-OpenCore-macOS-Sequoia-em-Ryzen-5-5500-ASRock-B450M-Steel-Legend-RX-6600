@@ -1,6 +1,6 @@
 # EFI OpenCore: macOS Sequoia em Ryzen 5 5500 + ASRock B450M Steel Legend + RX 6600
 
-> **Status:** 🧪 em teste. Veja a [tabela de testes](#4-status-dos-testes).
+> **Status:** ✅ instalado e funcionando (macOS 15.8), testes em andamento. Veja a [tabela de testes](#4-status-dos-testes).
 > OpenCore **1.0.7** · macOS **15 Sequoia** · AMD **Zen 3 (Cezanne)** · chipset **B450** · GPU **Navi 23**
 
 **English TL;DR:** OpenCore 1.0.7 EFI for macOS Sequoia on a Ryzen 5 5500 / ASRock B450M Steel Legend / RX 6600. It was built only from the Dortania guide, AMD_Vanilla and official GitHub releases. This README is in Portuguese and is structured so you can hand it to an AI coding agent (Claude Code, Codex, Cursor…) to adapt the EFI to your own hardware (see [section 8](#8-prompt-pronto-para-colar-no-seu-agente)). **The SMBIOS is blank on purpose: generate your own.**
@@ -76,33 +76,37 @@ Eu buscava ajuda e pouca gente passava a informação completa. Então aqui est�
 ## 4. Status dos testes
 
 > Legenda: ✅ funciona · ⚠️ funciona com ressalva · ❌ não funciona · ⬜ ainda não testado
-> Versão do macOS testada: **15.___** (preencher)
+> Versão do macOS testada: **15.8 (24H23)**, instalada num SSD SATA Kingston A400, dando boot **sem o pendrive**.
 
 | Item | Status | Observações |
 |---|---|---|
-| Boot do instalador (recovery) | ⬜ | |
-| Instalação completa | ⬜ | |
-| 10 boots seguidos sem kernel panic | ⬜ | |
-| Aceleração gráfica (Metal) na RX 6600 | ⬜ | |
-| Vídeo pela HDMI e pela DisplayPort | ⬜ | |
-| Áudio onboard (layout-id final: `__`) | ⬜ | |
-| Áudio pela HDMI/DP | ⬜ | |
-| Ethernet | ⬜ | |
+| Boot do instalador (recovery) | ✅ | |
+| Instalação completa | ✅ | macOS 15.8 (24H23) |
+| 10 boots seguidos sem kernel panic | ⬜ | Nenhum pânico desde que o NVMeFix saiu. O log mostra `Only 168/256 slide values are usable` (valor bom). Ainda não chegou a 10 boots. |
+| Aceleração gráfica (Metal) na RX 6600 | ✅ | `Metal 3`, 8 GB de VRAM |
+| Vídeo pela HDMI e pela DisplayPort | ✅ | Dois monitores ao mesmo tempo (um na DP, outro na HDMI) |
+| Áudio onboard (layout-id final: `11`) | ⬜ | O AppleHDA carrega com `alc-layout-id = 11` e aparecem Line In, alto-falante e saída digital. Falta testar o som (atrás e na frente) |
+| Áudio pela HDMI/DP | ⬜ | Os dois monitores aparecem como saída de áudio; falta testar o som |
+| Ethernet | ⚠️ | Link só com o meio **fixo em 100baseTX full-duplex**. Suspeita: cabo com par ruim (no Windows também só chega a 100 Mbps). Em teste com cabo novo |
 | USB 2.0 / USB 3.0 / USB-C | ⬜ | |
-| iCloud / App Store / iMessage / FaceTime | ⬜ | |
+| iCloud / App Store / iMessage / FaceTime | ⬜ | A `en0` já aparece como **Built-in** (`IOBuiltin = Yes`) |
 | Sleep e wake | ⬜ | |
 | Reiniciar e desligar | ⬜ | |
 | NVRAM nativa | ⬜ | |
 | Atualização OTA (com `revpatch=sbvmm`) | ⬜ | |
-| Dual boot com o Windows | ⬜ | |
+| Dual boot com o Windows | ✅ | O Windows (NVMe) dá boot pelo menu do OpenCore |
 | Wi-Fi / Bluetooth / AirDrop / Handoff | ❌ | Não há hardware compatível (sem Wi-Fi; BT Realtek) |
+
+> **Por que o `layout-id` aparece como 7?** No `ioreg`, o controlador de áudio (HDEF) mostra `layout-id = 7` mesmo com 11 no `config.plist`. Isso é normal: o AppleALC guarda o valor real em `alc-layout-id` e deixa 7 no `layout-id` para o AppleHDA aceitar. Confira com `ioreg -rd1 -n HDEF | grep layout`.
 
 ### Ajustes feitos depois dos testes
 
 | Data | O que mudou | Por quê |
 |---|---|---|
 | 24/09/2026 | NVMeFix removido | Kernel panic no boot com NVMeFix no backtrace |
-| 24/09/2026 | `enableEEE = false` no RealtekRTL8111; sem `npci`; Above 4G ligado | Ethernet sem link (`status: inactive`) com modem de 100 Mbps. ⏳ em teste |
+| 24/09/2026 | `enableEEE = false` no RealtekRTL8111; sem `npci`; Above 4G ligado | Ethernet sem link (`status: inactive`) |
+| 25/09/2026 | Ethernet com o meio fixo em 100baseTX full-duplex (Ajustes do Sistema › Rede › Ethernet › Detalhes › Hardware) | No automático o link não subia. A causa provável é o cabo, não a EFI. ⏳ em teste com cabo novo |
+| 25/09/2026 | `revpatch=sbvmm` no boot-args e `HideAuxiliary = True` | Pós-instalação: atualizações OTA no macOS 14.4+ e menu mais limpo (Espaço mostra a recovery) |
 
 ---
 
@@ -160,14 +164,14 @@ Eu buscava ajuda e pouca gente passava a informação completa. Então aqui est�
 | Kernel › Quirks | ProvideCurrentCpuInfo | **True** | Obrigatório para os patches AMD atuais |
 | Kernel › Quirks | PanicNoKextDump / PowerTimeoutKernelPanic | **True** | Dortania Zen |
 | Kernel › Quirks | XhciPortLimit | False | Não funciona no macOS 11.3+; o USB é resolvido pelo mapa |
-| Misc › Boot | HideAuxiliary | **False** | Mostra a recovery durante a instalação (volte para True depois) |
+| Misc › Boot | HideAuxiliary | **True** | Esconde a recovery e as ferramentas do menu. **Na instalação, aperte Espaço no menu do OpenCore** para mostrar a recovery do pendrive (ou mude para False) |
 | Misc › Debug | AppleDebug / ApplePanic / DisableWatchDog | **True** | Diagnóstico |
 | Misc › Debug | Target | **67** | Log em arquivo na raiz do pendrive (`opencore-*.txt`) |
 | Misc › Security | AllowSetDefault | **True** | |
 | Misc › Security | ScanPolicy | **0** | |
 | Misc › Security | SecureBootModel | **Disabled** | O guia manda `Disabled` do macOS 14.4 ao 26 (necessário para OTA) |
 | Misc › Security | Vault | **Optional** | |
-| NVRAM | boot-args | `-v keepsyms=1 debug=0x100 agdpmod=pikera` | Verbose; pânico fica na tela; `agdpmod=pikera` para GPU Navi |
+| NVRAM | boot-args | `-v keepsyms=1 debug=0x100 agdpmod=pikera revpatch=sbvmm` | Verbose; pânico fica na tela; `agdpmod=pikera` para GPU Navi; `revpatch=sbvmm` (RestrictEvents) libera as atualizações OTA no macOS 14.4+ |
 | NVRAM | prev-lang:kbd | `pt-BR:128` | Português (Brasil) + teclado **ABNT2**. Americano: `en-US:0` |
 | PlatformInfo | SystemProductName | **MacPro7,1** | Recomendado pelo Dortania para GPU AMD Polaris ou mais nova |
 | PlatformInfo | Serial / MLB / UUID / ROM | **valores de exemplo** | ⚠️ gere os seus ([seção 6](#6-️-o-que-você-obrigatoriamente-precisa-trocar)) |
@@ -232,7 +236,7 @@ No Linux, os equivalentes são `lspci -nn`, `cat /proc/asound/card*/codec#* | gr
 | **GPU Polaris (RX 460 a 590) ou Vega** | **Remova** `agdpmod=pikera` (é só para Navi). |
 | **GPU RX 6700/6700 XT/6750 XT (Navi 22), RX 6400/6500 XT (Navi 24), RX 7000+, NVIDIA atual, Intel Arc** | **Não suportada** no Sequoia. Para variantes específicas (6650 XT, 6950 XT…), confira o [GPU Buyers Guide do Dortania](https://dortania.github.io/GPU-Buyers-Guide/). |
 | **Codec de áudio diferente** | Escolha o `layout-id` ([7.6](#76-áudio)). |
-| **Ethernet Realtek RTL8111 sem link** (`ifconfig en0` → `status: inactive`) | Desligue o EEE: `enableEEE` = `false` em `RealtekRTL8111.kext/Contents/Info.plist` › *Driver Parameters* (opção documentada pelo autor). **Não use `npci=0x2000/0x3000`** (o README do driver manda evitar). Teste o meio manual no Terminal: `ifconfig en0 media 100baseTX mediaopt full-duplex`. |
+| **Ethernet Realtek RTL8111 sem link** (`ifconfig en0` → `status: inactive`) | Desligue o EEE: `enableEEE` = `false` em `RealtekRTL8111.kext/Contents/Info.plist` › *Driver Parameters* (opção documentada pelo autor). **Não use `npci=0x2000/0x3000`** (o README do driver manda evitar). Teste o meio manual no Terminal: `ifconfig en0 media 100baseTX mediaopt full-duplex`. Se só funcionar assim, desconfie do **cabo** antes da EFI (foi o caso aqui: no Windows o link também não passava de 100 Mbps). |
 | **Ethernet Realtek RTL8125 (2.5 GbE)** | Troque RealtekRTL8111 por **LucyRTL8125Ethernet**. |
 | **Ethernet Intel (I211, I225…) ou outra** | Veja a seção Ethernet do [guia de kexts do Dortania](https://dortania.github.io/OpenCore-Install-Guide/ktext.html). |
 | **NVMe na máquina** | O **NVMeFix** é opcional. **Aqui ele causou kernel panic no boot** (`org.acidanthera.NVMeFix` no backtrace) com um NVMe Silicon Motion SM2263 e foi **removido**. Só inclua se o macOS for instalado no NVMe, e teste. |
@@ -348,7 +352,7 @@ Estes são os itens do Dortania para AMD. Os caminhos são os do **manual da ASR
 | 10 | XMP | OC Tweaker (perfil de memória) | **desligado** no 1º teste |
 | n/a | Global C-state Control | Advanced › AMD CBS › Zen (ou CPU) Common Options | só desligue se os pânicos continuarem |
 
-- **ASRock e Gigabyte:** o guia avisa que ligar o **Above 4G pode quebrar a Ethernet** e sugere `npci=0x3000` no lugar. **Nesta placa isso não resolveu**, e o README do RealtekRTL8111 manda **evitar `npci`**. Aqui a Ethernet sem link foi tratada desligando o EEE do driver (veja [7.3](#73-tabela-de-decisão-o-que-mudar-conforme-o-seu-hardware)).
+- **ASRock e Gigabyte:** o guia avisa que ligar o **Above 4G pode quebrar a Ethernet** e sugere `npci=0x3000` no lugar. **Nesta placa isso não resolveu**, e o README do RealtekRTL8111 manda **evitar `npci`**. Aqui a Ethernet sem link foi tratada desligando o EEE do driver e fixando o meio em 100baseTX full-duplex. A causa provável era o cabo (veja [7.3](#73-tabela-de-decisão-o-que-mudar-conforme-o-seu-hardware)).
 - Menu de boot da ASRock: **F11**. Setup: **F2** ou **Del**.
 
 ---
@@ -396,15 +400,15 @@ Outras dicas:
 ## 11. Pós-instalação
 
 1. Copie a `EFI` do pendrive para a partição EFI do disco do macOS.
-2. **Atualizações OTA (macOS 14.4+):** adicione `revpatch=sbvmm` ao boot-args (o RestrictEvents já está incluído) e mantenha `SecureBootModel = Disabled`.
+2. **Atualizações OTA (macOS 14.4+):** o `revpatch=sbvmm` já está no boot-args desta EFI (precisa do RestrictEvents, que já está incluído). Mantenha `SecureBootModel = Disabled`. Para conferir: `sysctl kern.hv_vmm_present` tem que responder `1`.
 3. Confira no Hackintool (System › Peripherals) se a `en0` aparece com **Built-in**.
 4. Faça o primeiro login no iCloud pela Ethernet.
 5. Teste se a NVRAM funciona (seção "Verifying NVRAM" do [guia de iServices](https://dortania.github.io/OpenCore-Post-Install/universal/iservices.html)).
 6. Com o sistema estável, você pode:
-   - voltar `HideAuxiliary = True`;
    - trocar o OpenCore para a build RELEASE;
-   - desligar `Target = 67`;
-   - tirar `-v` e `debug=0x100`.
+   - desligar os logs (`Target = 3`, `AppleDebug` e `ApplePanic = False`);
+   - ativar o **picker gráfico**: `OpenCanopy.efi` em `Drivers`, a pasta `Resources` do OcBinaryData em `EFI/OC/Resources`, e `PickerMode = External`;
+   - o verbose (`-v`) pode ficar, se você gosta de ver o boot.
 
 ---
 
