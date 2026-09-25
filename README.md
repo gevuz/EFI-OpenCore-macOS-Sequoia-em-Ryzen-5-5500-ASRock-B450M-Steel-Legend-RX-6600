@@ -95,6 +95,7 @@ Eu buscava ajuda e pouca gente passava a informação completa. Então aqui est�
 | NVRAM nativa | ⬜ | |
 | Atualização OTA (com `revpatch=sbvmm`) | ⬜ | |
 | Dual boot com o Windows | ✅ | O Windows (NVMe) dá boot pelo menu do OpenCore |
+| Discord (chamada de voz) | ⚠️ | Travava ao entrar na call (Krisp usa Intel MKL). Funciona sem o Krisp: veja [11.1](#111-apps-que-travam-em-amd-intel-mkl) |
 | Wi-Fi / Bluetooth / AirDrop / Handoff | ❌ | Não há hardware compatível (sem Wi-Fi; BT Realtek) |
 
 > **Por que o `layout-id` aparece como 7?** No `ioreg`, o controlador de áudio (HDEF) mostra `layout-id = 7` mesmo com 11 no `config.plist`. Isso é normal: o AppleALC guarda o valor real em `alc-layout-id` e deixa 7 no `layout-id` para o AppleHDA aceitar. Confira com `ioreg -rd1 -n HDEF | grep layout`.
@@ -409,6 +410,25 @@ Outras dicas:
    - desligar os logs (`Target = 3`, `AppleDebug` e `ApplePanic = False`);
    - ativar o **picker gráfico**: `OpenCanopy.efi` em `Drivers`, a pasta `Resources` do OcBinaryData em `EFI/OC/Resources`, e `PickerMode = External`;
    - o verbose (`-v`) pode ficar, se você gosta de ver o boot.
+
+### 11.1 Apps que travam em AMD (Intel MKL)
+
+Alguns apps usam a **Intel MKL** (Math Kernel Library), que no macOS só funciona em CPU Intel e **fecha o app** em Ryzen. O problema é do processador AMD, não do Sequoia. A [FAQ do AMD-OSX](https://github.com/AMD-OSX/AMD-OSX-FAQ/blob/main/faq.txt) cita, entre outros: Adobe CC, Discord (Krisp), MATLAB, Autodesk Maya/AutoCAD e plugins Waves. Para ver se um app seu usa a MKL:
+
+```bash
+grep -rlaF mkl_serv_intel_cpu_true /Applications ~/Library/Application\ Support 2>/dev/null
+```
+
+**Discord** (testado na versão 0.0.413, em 25/09/2026): fechava na hora de entrar numa chamada de voz. Quem usa a MKL é o **Krisp**, e o `~/Library/Application Support/discord/logs/discord_krisp.log` para logo depois de `KrispVADSetup` ou de `Setting Krisp model`. A solução, sem patch nenhum, é em **Configurações do Usuário › Voz e Vídeo**:
+
+1. **Perfil de entrada:** **Personalizado**. O perfil **Isolamento de Voz** usa o Krisp.
+2. **Supressão de ruído:** **Padrão** (WebRTC, sem MKL), em vez de Krisp.
+3. **Desligue "Ajustar Automaticamente a Sensibilidade de Entrada".** Nesta versão, ela usa o VAD do Krisp: só trocar a supressão de ruído **não** resolve.
+4. **Ajuste o slider de sensibilidade à mão:** o teclado e o ventilador ficam abaixo da bolinha (amarelo), e a voz passa dela (verde). Com o slider todo à esquerda, o Discord transmite o tempo todo e pega teclado e vento. Baixar o ganho do microfone e chegar mais perto ajuda muito.
+
+> **Por que não o patch?** As correções antigas só definem a variável `MKL_DEBUG_CPU_TYPE=5`, e a oneAPI MKL do Krisp atual ignora essa variável. O patch no binário (AMDFriend) funciona, mas o Discord só carrega bibliotecas com a assinatura dele: o Krisp modificado só carrega com o **SIP desligado**. Não recomendo trocar a segurança do sistema por uma supressão de ruído.
+
+**Photoshop/Adobe:** não testado nesta máquina. Veja a FAQ do AMD-OSX e o [AMDFriend](https://codeberg.org/NyaomiDEV/AMDFriend).
 
 ---
 
