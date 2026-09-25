@@ -431,6 +431,13 @@ grep -rlaF mkl_serv_intel_cpu_true /Applications ~/Library/Application\ Support 
 
 **Photoshop/Adobe:** não testado nesta máquina. Veja a FAQ do AMD-OSX e o [AMDFriend](https://codeberg.org/NyaomiDEV/AMDFriend).
 
+### 11.2 Apps recomendados (opcionais)
+
+| App | Para quê | Observações |
+|---|---|---|
+| [**Mos**](https://mos.caldis.me/) ([GitHub](https://github.com/Caldis/Mos)) | **Rolagem suave** para mouse comum. No macOS, a roda de um mouse USB rola aos "trancos", linha por linha; o Mos suaviza. Também separa a direção da rolagem do mouse da do trackpad | Gratuito e de código aberto; a release oficial é assinada e **notarizada** pela Apple. Testado: 4.2.1. Baixe o `.zip` da página oficial, arraste o `Mos.app` para **Aplicativos** e, na primeira vez, permita em **Ajustes do Sistema › Privacidade e Segurança › Acessibilidade**. Para abrir sozinho: *Iniciar no login*, nas preferências do Mos |
+| [**Hackintool**](https://github.com/benbaker76/Hackintool) | Conferir PCI, USB, `en0` Built-in e NVRAM | Usado nos passos de pós-instalação acima |
+
 ---
 
 ## 12. Estrutura do repositório e scripts
