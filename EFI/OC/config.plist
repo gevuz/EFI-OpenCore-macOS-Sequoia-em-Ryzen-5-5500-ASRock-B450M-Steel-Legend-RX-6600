@@ -1314,7 +1314,7 @@
 			<key>HibernateSkipsPicker</key>
 			<false/>
 			<key>HideAuxiliary</key>
-			<false/>
+			<true/>
 			<key>InstanceIdentifier</key>
 			<string></string>
 			<key>LauncherOption</key>
@@ -1451,7 +1451,7 @@
 				Rg==
 				</data>
 				<key>boot-args</key>
-				<string>-v keepsyms=1 debug=0x100 agdpmod=pikera</string>
+				<string>-v keepsyms=1 debug=0x100 agdpmod=pikera revpatch=sbvmm</string>
 				<key>csr-active-config</key>
 				<data>
 				AAAAAA==
