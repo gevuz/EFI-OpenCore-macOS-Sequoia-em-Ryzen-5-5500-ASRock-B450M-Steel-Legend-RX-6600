@@ -1,0 +1,8 @@
+# Nunca versionar
+smbios-gerado.txt
+com.apple.recovery.boot/
+*.dmg
+*.chunklist
+opencore-*.txt
+panic*.txt
+usb-descoberta.json
