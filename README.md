@@ -82,7 +82,7 @@ Eu buscava ajuda e pouca gente passava a informação completa. Então aqui est�
 |---|---|---|
 | Boot do instalador (recovery) | ✅ | |
 | Instalação completa | ✅ | macOS 15.8 (24H23) |
-| 10 boots seguidos sem kernel panic | ⬜ | Nenhum pânico desde que o NVMeFix saiu (log: `Only 168/256 slide values are usable`, valor bom). Em 5 boots pelo SSD, **1 reiniciou sozinho** logo no começo do kernel, sem tela de pânico; o boot seguinte foi normal. Em observação |
+| 10 boots seguidos sem kernel panic | ⚠️ | Nenhum **pânico** desde que o NVMeFix saiu, mas em 8 boots pelo SSD houve **3 reinícios sozinhos** logo no começo do kernel, sem tela de pânico. **Todos vieram logo depois de reiniciar pelo macOS**; depois de reiniciar pelo Windows, o macOS sobe normal. O slide não é a causa. Em investigação |
 | Aceleração gráfica (Metal) na RX 6600 | ✅ | `Metal 3`, 8 GB de VRAM |
 | Vídeo pela HDMI e pela DisplayPort | ✅ | Dois monitores ao mesmo tempo (um na DP, outro na HDMI) |
 | Áudio onboard (layout-id final: `11`) | ✅ | Layout 11 do AppleALC (`alc-layout-id = 11`) |
